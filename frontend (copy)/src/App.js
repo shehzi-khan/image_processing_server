@@ -29,7 +29,8 @@ class App extends Component {
             pagination_list:[],
             pagination_items:[],
             number_of_images:null,
-            active_ann_list:[]
+            active_ann_list:[],
+            host:'http://178.128.213.249:5000'
           };
 
         this.data = [{cat_id:1,category:"student",superb:"person"}]
@@ -40,7 +41,7 @@ class App extends Component {
 
   componentDidMount() {
       let number_of_images=null;
-      axios.get(`http://0.0.0.0:5000/images/length`)
+      axios.get(this.state.host+`/images/length`)
           .then(res => {
             let responses = res.data;
             // console.log("Response",responses);
@@ -58,7 +59,7 @@ class App extends Component {
 
   }
   load_annotations(id){
-        axios.get(`http://0.0.0.0:5000/image/classes?id=`+id)
+        axios.get(this.state.host+`/image/classes?id=`+id)
           .then(res => {
               let response=res.data;
               let active_classes = response.classes;
@@ -72,7 +73,7 @@ class App extends Component {
 
   load_images(active=1,number_of_images=null) {
     let images = [];
-    axios.get(`http://0.0.0.0:5000/images`,{
+    axios.get(this.state.host+`/images`,{
         params:{
             start:active*this.state.images_per_page-this.state.images_per_page,
             end:active*this.state.images_per_page-1
@@ -148,18 +149,20 @@ class App extends Component {
     // this.load_images()
     return (
       <Container>
-          <Row>
-            <Col className={"Image-list"}>
-                <Container >
-                    { this.state.images.map(image => <Col fluid onClick={()=>{this.imageClick(image)}}><Image fluid src={"http://localhost:5000/thumbs?file_name="+image.file_name} thumbnail /></Col>)}
-              </Container>
-                <Container>
-                    <Pagination bssize="small" >{this.state.pagination_list}</Pagination>
+          <Row >
+            <Col md={"auto"} className={"Image-list"} >
+                <Row>
+                <Container fluid style={{  height:'700px'}}>
+                    { this.state.images.map(image => <Col fluid onClick={()=>{this.imageClick(image)}}><Image fluid width={150} height={150} src={this.state.host+"/thumbs?file_name="+image.file_name} thumbnail /></Col>)}
                 </Container>
+                </Row>
+
             </Col>
             <Col >
                 <Row>
-                    <Image fluid onChange={()=>console.log("hello")} src={!!(this.state.active_image)?"http://localhost:5000/image?file_name="+this.state.active_image.file_name+"&mask="+this.state.mask+"&bbox="+this.state.bbox+"&hide_image="+this.state.hide_image+"&ann="+this.state.active_ann_list:""} thumbnail />
+                    <Col>
+                    <Image center fluid onChange={()=>console.log("hello")} src={!!(this.state.active_image)?this.state.host+"/image?file_name="+this.state.active_image.file_name+"&mask="+this.state.mask+"&bbox="+this.state.bbox+"&hide_image="+this.state.hide_image+"&ann="+this.state.active_ann_list:""} thumbnail />
+                    </Col>
                 </Row>
                 <Row>
                     <Form>
@@ -181,7 +184,7 @@ class App extends Component {
                               <th>#</th>
                               <th>Class ID</th>
                               <th>Class</th>
-                              <th>Super Class</th>
+                              <th>Super Classes</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -193,7 +196,11 @@ class App extends Component {
 
             </Col>
           </Row>
-
+        <Row>
+            <Container>
+                <Pagination bssize="small" >{this.state.pagination_list}</Pagination>
+            </Container>
+        </Row>
         </Container>
     );
   }
